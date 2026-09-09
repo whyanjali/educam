@@ -114,6 +114,117 @@ def login(req: LoginRequest):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return user
 
+@app.post("/api/auth/face-login")
+async def face_login(req: FaceRegisterRequest):
+    try:
+        frame = decode_base64_image(req.image_base64)
+        if frame is None or frame.size == 0:
+            return {"authenticated": False, "reason": "invalid_frame", "message": "Could not decode camera image."}
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = camera_manager.analyzer.face_cascade.detectMultiScale(
+            gray, scaleFactor=1.2, minNeighbors=4, minSize=(60, 60)
+        )
+
+        if len(faces) == 0:
+            return {
+                "authenticated": False, 
+                "reason": "no_face_detected", 
+                "message": "No face detected in camera viewport. Please center your face."
+            }
+
+        # Take largest face
+        largest_face = max(faces, key=lambda b: b[2] * b[3])
+        match = camera_manager.recognizer.recognize(frame, largest_face)
+
+        if match:
+            student_id = match["student_id"]
+            confidence = match["confidence"]
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT u.id, u.username, u.role, u.student_id, u.name, u.email, s.name as student_name, s.roll_number
+                FROM users u
+                LEFT JOIN students s ON u.student_id = s.id
+                WHERE u.student_id = ? OR (u.id = ? AND u.role = 'teacher')
+                LIMIT 1
+            """, (student_id, student_id))
+            user = cursor.fetchone()
+            conn.close()
+
+            if user:
+                user_dict = dict(user)
+                # Automatically log attendance for today
+                from database import log_attendance
+                log_attendance(student_id)
+
+                return {
+                    "authenticated": True,
+                    "user": user_dict,
+                    "confidence": confidence,
+                    "message": f"Biometric Match Verified: {user_dict['name']} ({user_dict['role'].capitalize()})"
+                }
+            else:
+                # Default to student Rahul if student 1
+                return {
+                    "authenticated": True,
+                    "user": {
+                        "id": student_id,
+                        "username": "student",
+                        "role": "student",
+                        "student_id": student_id,
+                        "name": match["name"],
+                        "student_name": match["name"],
+                        "roll_number": "101"
+                    },
+                    "confidence": confidence,
+                    "message": f"Biometric Match Verified: {match['name']} (Student)"
+                }
+
+        return {
+            "authenticated": False,
+            "reason": "unrecognized_face",
+            "message": "Face detected, but biometric profile not recognized. Click 'Enroll My Face' to register."
+        }
+    except Exception as e:
+        return {"authenticated": False, "reason": "error", "message": f"Biometric processing error: {str(e)}"}
+
+@app.post("/api/auth/quick-enroll-face")
+async def quick_enroll_face(req: FaceRegisterRequest, student_id: int = 1, role: str = "student"):
+    try:
+        frame = decode_base64_image(req.image_base64)
+        if frame is None or frame.size == 0:
+            raise HTTPException(status_code=400, detail="Invalid image payload.")
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = camera_manager.analyzer.face_cascade.detectMultiScale(
+            gray, scaleFactor=1.2, minNeighbors=4, minSize=(60, 60)
+        )
+
+        if len(faces) == 0:
+            raise HTTPException(status_code=400, detail="No face detected to enroll. Please center your face.")
+
+        largest_face = max(faces, key=lambda b: b[2] * b[3])
+        success = camera_manager.recognizer.register_student(student_id, frame, largest_face)
+
+        if success:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM students WHERE id = ?", (student_id,))
+            st = cursor.fetchone()
+            name = st["name"] if st else ("Prof. Vikram Sharma" if role == "teacher" else "Rahul Sharma")
+            conn.close()
+
+            return {
+                "status": "success",
+                "message": f"Biometric profile successfully registered for {name}! You can now login via Face ID."
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to train recognizer with face image.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/auth/register")
 def register(req: RegisterRequest):
     try:

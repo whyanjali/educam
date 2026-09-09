@@ -1,8 +1,23 @@
+import asyncio
+import base64
+import numpy as np
+import cv2
 from main import (
     read_root, login, list_students, get_attendance,
     get_academic_report, list_messages, get_counseling_diagnosis,
-    ai_assistant_chat, LoginRequest, AIChatRequest
+    ai_assistant_chat, face_login, quick_enroll_face,
+    LoginRequest, AIChatRequest, FaceRegisterRequest
 )
+
+def create_synthetic_face_base64():
+    # Create an image with a drawn face circle, eyes, and mouth for testing
+    img = np.zeros((300, 300, 3), dtype=np.uint8)
+    cv2.circle(img, (150, 150), 80, (200, 200, 200), -1)
+    cv2.circle(img, (120, 130), 12, (0, 0, 0), -1)
+    cv2.circle(img, (180, 130), 12, (0, 0, 0), -1)
+    cv2.ellipse(img, (150, 180), (35, 15), 0, 0, 180, (0, 0, 0), 4)
+    _, buffer = cv2.imencode('.jpg', img)
+    return "data:image/jpeg;base64," + base64.b64encode(buffer).decode('utf-8')
 
 def test_all():
     print("Testing EduCam Direct Endpoint Functions...")
@@ -64,7 +79,17 @@ def test_all():
     assert "Pomodoro" in chat_resp["reply"]
     print("[PASS] AI Study Companion Chat OK")
 
-    print("\nALL 10 EDUCAM API SUITE TESTS PASSED WITH 100% SUCCESS!")
+    # 11. Biometric Real-Time Face Login (no face / blank frame rejection)
+    blank_img = np.zeros((100, 100, 3), dtype=np.uint8)
+    _, buf = cv2.imencode('.jpg', blank_img)
+    blank_b64 = "data:image/jpeg;base64," + base64.b64encode(buf).decode('utf-8')
+    
+    face_resp = asyncio.run(face_login(FaceRegisterRequest(image_base64=blank_b64)))
+    assert face_resp["authenticated"] is False
+    assert face_resp["reason"] == "no_face_detected"
+    print("[PASS] Real-time Biometric Rejection test OK (Correctly rejects non-face frames)")
+
+    print("\nALL 11 EDUCAM API SUITE TESTS (INCLUDING BIOMETRICS) PASSED WITH 100% SUCCESS!")
 
 if __name__ == "__main__":
     test_all()

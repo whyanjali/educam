@@ -9,16 +9,25 @@ import AcademicReportView from './components/AcademicReportView';
 import AIAssistantModal from './components/AIAssistantModal';
 
 function App() {
-  // Default to logged-in teacher for instant frictionless testing
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    username: 'teacher',
-    role: 'teacher',
-    name: 'Prof. Vikram Sharma',
-    email: 'vikram.sharma@educam.edu'
+  // Check localStorage for saved session
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('educam_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
   
-  const [currentRole, setCurrentRole] = useState('teacher');
+  const [currentRole, setCurrentRole] = useState(() => {
+    try {
+      const saved = localStorage.getItem('educam_user');
+      return saved ? JSON.parse(saved).role : 'student';
+    } catch {
+      return 'student';
+    }
+  });
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
@@ -54,16 +63,20 @@ function App() {
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
     setCurrentRole(user.role);
+    localStorage.setItem('educam_user', JSON.stringify(user));
     setActiveTab('dashboard');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('educam_user');
   };
 
   const handleQuickSwitch = (role) => {
     setCurrentRole(role);
-    setCurrentUser(demoUsers[role]);
+    const u = demoUsers[role];
+    setCurrentUser(u);
+    localStorage.setItem('educam_user', JSON.stringify(u));
   };
 
   if (!currentUser) {
