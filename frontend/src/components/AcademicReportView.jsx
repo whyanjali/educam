@@ -150,17 +150,17 @@ const AcademicReportView = ({ currentUser, currentRole }) => {
       <div className="glass-panel" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', fontWeight: 700, textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-amber)', fontWeight: 700, textTransform: 'uppercase' }}>
               Term Progress Card
             </span>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'var(--text-primary)' }}>
               Subject Performance Overview
             </h2>
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
-            border: '1px solid rgba(139, 92, 246, 0.4)',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
             padding: '0.75rem 1.5rem',
             borderRadius: '12px',
             textAlign: 'right'
@@ -178,33 +178,31 @@ const AcademicReportView = ({ currentUser, currentRole }) => {
             <thead>
               <tr>
                 <th>Subject</th>
-                <th>Exam Term</th>
-                <th>Marks Scored</th>
-                <th>Percentage</th>
+                <th>Score</th>
+                <th>Progress</th>
                 <th>Grade</th>
-                <th>Teacher Remarks</th>
+                <th>Instructor Remarks</th>
               </tr>
             </thead>
             <tbody>
-              {reportData?.subjects?.map((sub) => {
+              {reportData?.subjects?.map((sub, idx) => {
                 const pct = Math.round((sub.marks / sub.max_marks) * 100);
                 return (
-                  <tr key={sub.id}>
+                  <tr key={idx}>
                     <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{sub.subject}</td>
-                    <td>{sub.exam_type}</td>
-                    <td style={{ fontWeight: 600 }}>{sub.marks} / {sub.max_marks}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{sub.marks} / {sub.max_marks}</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <div style={{ flex: 1, height: '6px', background: 'var(--bg-tertiary)', borderRadius: '3px', width: '70px' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-blue)', borderRadius: '3px' }}></div>
+                          <div style={{ width: `${pct}%`, height: '100%', background: 'var(--accent-amber)', borderRadius: '3px' }}></div>
                         </div>
-                        <span style={{ fontSize: '0.8rem' }}>{pct}%</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{pct}%</span>
                       </div>
                     </td>
                     <td>
                       <span style={{
-                        background: sub.grade.startsWith('A') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                        color: sub.grade.startsWith('A') ? 'var(--accent-emerald)' : 'var(--accent-blue)',
+                        background: sub.grade.startsWith('A') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                        color: sub.grade.startsWith('A') ? 'var(--accent-emerald)' : 'var(--accent-amber)',
                         padding: '4px 8px',
                         borderRadius: '6px',
                         fontWeight: 700,

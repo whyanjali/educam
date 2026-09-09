@@ -37,17 +37,17 @@ const StudentDashboard = ({ currentUser, openAIModal }) => {
       <div className="glass-panel" style={{
         marginBottom: '1.5rem',
         background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)',
-        border: '1px solid rgba(59, 130, 246, 0.3)',
+        border: '1px solid rgba(245, 158, 11, 0.35)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '1.5rem 2rem'
       }}>
         <div>
-          <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-blue)', fontWeight: 700 }}>
+          <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-amber)', fontWeight: 700 }}>
             Student Learning Cockpit
           </span>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800, marginTop: '0.25rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 800, marginTop: '0.25rem', color: 'var(--text-primary)' }}>
             Welcome back, {currentUser?.student_name || currentUser?.name || 'Rahul Sharma'}!
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
@@ -130,10 +130,10 @@ const StudentDashboard = ({ currentUser, openAIModal }) => {
         <div className="glass-panel">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>Classroom Focus & Activeness Timeline</h2>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'var(--text-primary)' }}>Classroom Focus & Activeness Timeline</h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Recorded by EduCam during today's lectures</p>
             </div>
-            <span style={{ fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', padding: '4px 8px', borderRadius: '6px' }}>
+            <span style={{ fontSize: '0.8rem', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--accent-amber)', padding: '4px 8px', borderRadius: '6px', fontWeight: 600 }}>
               Real-time Vision Analytics
             </span>
           </div>
@@ -154,7 +154,7 @@ const StudentDashboard = ({ currentUser, openAIModal }) => {
                         background: item.is_drowsy 
                           ? 'var(--accent-rose)' 
                           : item.attention_score > 80 
-                            ? 'linear-gradient(90deg, #3b82f6, #10b981)' 
+                            ? 'linear-gradient(90deg, #f59e0b, #10b981)' 
                             : 'var(--accent-amber)',
                         borderRadius: '5px'
                       }}></div>

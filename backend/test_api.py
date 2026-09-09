@@ -35,12 +35,14 @@ def test_all():
     print(f"[PASS] Parent Email Login OK ({parent_user['name']})")
 
     # 5. Student Registration with Roll & Grade
+    import time
+    ts = int(time.time())
     reg_student = register(RegisterRequest(
-        name="Rohit Verma",
-        email="rohit@educam.edu",
+        name=f"Rohit Verma {ts}",
+        email=f"rohit_{ts}@educam.edu",
         password="rohitpass123",
         role="student",
-        roll_number="108",
+        roll_number=str(ts % 9000 + 1000),
         grade="Class 10-B"
     ))
     assert reg_student["role"] == "student"
@@ -49,8 +51,8 @@ def test_all():
 
     # 6. Parent Registration linked to child roll 102
     reg_parent = register(RegisterRequest(
-        name="Mrs. Kavita Patel",
-        email="kavita.patel@parent.educam.com",
+        name=f"Mrs. Kavita Patel {ts}",
+        email=f"kavita_{ts}@parent.educam.com",
         password="patelpass123",
         role="parent",
         child_roll_number="102"
@@ -62,8 +64,8 @@ def test_all():
     # 7. Student CRUD: Create Student
     created_stu = create_student_endpoint(StudentCreate(
         name="Ananya Sen",
-        roll_number="109",
-        email="ananya.sen@student.educam.edu",
+        roll_number=f"R{ts % 9000 + 1000}",
+        email=f"ananya_{ts}@student.educam.edu",
         grade="Class 10-A"
     ))
     new_id = created_stu["id"]

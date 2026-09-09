@@ -119,13 +119,13 @@ const ConnectingPortal = ({ currentUser, currentRole }) => {
           <button 
             onClick={() => setFilterTab('all')}
             style={{
-              background: filterTab === 'all' ? 'var(--accent-blue)' : 'transparent',
-              color: filterTab === 'all' ? '#fff' : 'var(--text-secondary)',
+              background: filterTab === 'all' ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' : 'transparent',
+              color: filterTab === 'all' ? '#170d01' : 'var(--text-secondary)',
               border: 'none',
               padding: '6px 14px',
               borderRadius: '8px',
               fontSize: '0.8rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer'
             }}
           >
@@ -134,13 +134,13 @@ const ConnectingPortal = ({ currentUser, currentRole }) => {
           <button 
             onClick={() => setFilterTab('announcements')}
             style={{
-              background: filterTab === 'announcements' ? 'var(--accent-blue)' : 'transparent',
-              color: filterTab === 'announcements' ? '#fff' : 'var(--text-secondary)',
+              background: filterTab === 'announcements' ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' : 'transparent',
+              color: filterTab === 'announcements' ? '#170d01' : 'var(--text-secondary)',
               border: 'none',
               padding: '6px 14px',
               borderRadius: '8px',
               fontSize: '0.8rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer'
             }}
           >
@@ -149,13 +149,13 @@ const ConnectingPortal = ({ currentUser, currentRole }) => {
           <button 
             onClick={() => setFilterTab('direct')}
             style={{
-              background: filterTab === 'direct' ? 'var(--accent-blue)' : 'transparent',
-              color: filterTab === 'direct' ? '#fff' : 'var(--text-secondary)',
+              background: filterTab === 'direct' ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' : 'transparent',
+              color: filterTab === 'direct' ? '#170d01' : 'var(--text-secondary)',
               border: 'none',
               padding: '6px 14px',
               borderRadius: '8px',
               fontSize: '0.8rem',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: 'pointer'
             }}
           >

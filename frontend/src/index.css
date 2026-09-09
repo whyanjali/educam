@@ -1,37 +1,59 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #0b0f19;
-  --bg-secondary: #131b2e;
-  --bg-tertiary: #1e2942;
+  /* Warm dark surface foundations (warm espresso & charcoal) */
+  --bg-primary: #0e0d0b;
+  --bg-secondary: #171512;
+  --bg-tertiary: #231f1a;
   
-  --accent-blue: #3b82f6;
-  --accent-blue-glow: rgba(59, 130, 246, 0.4);
+  /* Warm accent palette */
+  --accent-amber: #f59e0b;
+  --accent-amber-glow: rgba(245, 158, 11, 0.45);
+
+  --accent-gold: #fbbf24;
+  --accent-gold-glow: rgba(251, 191, 36, 0.45);
+
+  --accent-orange: #f97316;
+  --accent-orange-glow: rgba(249, 115, 22, 0.45);
+
+  /* Warm mapping for blue/purple accents */
+  --accent-blue: #f59e0b; /* Golden amber */
+  --accent-blue-glow: rgba(245, 158, 11, 0.4);
   
-  --accent-purple: #8b5cf6;
-  --accent-purple-glow: rgba(139, 92, 246, 0.4);
+  --accent-purple: #f97316; /* Sunset coral */
+  --accent-purple-glow: rgba(249, 115, 22, 0.4);
   
   --accent-emerald: #10b981;
   --accent-emerald-glow: rgba(16, 185, 129, 0.4);
   
-  --accent-amber: #f59e0b;
-  --accent-amber-glow: rgba(245, 158, 11, 0.4);
-  
   --accent-rose: #f43f5e;
   --accent-rose-glow: rgba(244, 63, 94, 0.4);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  /* Warm Font / Text Color Palette */
+  --text-primary: #fffaf0; /* Warm radiant floral ivory */
+  --text-secondary: #d8c7b0; /* Warm toasted wheat / linen */
+  --text-muted: #9e8a74; /* Warm caramel / hazelnut */
+  --text-warm-title: #fef08a; /* Warm golden champagne */
   
-  --border-glow: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(59, 130, 246, 0.6);
+  --border-glow: rgba(245, 158, 11, 0.22);
+  --border-focus: rgba(245, 158, 11, 0.6);
   
-  --glass-bg: rgba(19, 27, 46, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-bg: rgba(23, 21, 18, 0.78);
+  --glass-border: rgba(251, 191, 36, 0.12);
   
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-heading: 'Outfit', var(--font-sans);
+}
+
+::selection {
+  background-color: rgba(245, 158, 11, 0.35);
+  color: #fffaf0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
 }
 
 * {
@@ -81,7 +103,7 @@ body {
   font-weight: 800;
   color: var(--text-primary);
   text-decoration: none;
-  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #f97316 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -111,8 +133,9 @@ body {
 
 .nav-item.active {
   box-shadow: 0 0 0 1px var(--border-glow);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(249, 115, 22, 0.16) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fef08a;
 }
 
 /* Main Content */
@@ -256,17 +279,21 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   border: none;
+  color: #170d01;
+  font-weight: 700;
 }
 
 .btn-primary:hover {
-  box-shadow: 0 4px 15px var(--accent-blue-glow);
+  box-shadow: 0 4px 18px rgba(245, 158, 11, 0.45);
+  color: #170d01;
 }
 
 .btn-danger {
   background: linear-gradient(135deg, var(--accent-rose) 0%, #be123c 100%);
   border: none;
+  color: #fff;
 }
 
 .btn-danger:hover {
@@ -276,6 +303,7 @@ body {
 .btn-success {
   background: linear-gradient(135deg, var(--accent-emerald) 0%, #047857 100%);
   border: none;
+  color: #fff;
 }
 
 .btn-success:hover {
@@ -291,7 +319,7 @@ body {
 }
 
 .metric-card {
-  background: linear-gradient(145deg, rgba(30, 41, 66, 0.4) 0%, rgba(19, 27, 46, 0.6) 100%);
+  background: linear-gradient(145deg, rgba(37, 31, 26, 0.55) 0%, rgba(23, 20, 18, 0.75) 100%);
   border: 1px solid var(--glass-border);
   border-radius: 14px;
   padding: 1.25rem;
@@ -409,9 +437,9 @@ body {
 }
 
 .badge-attention {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: var(--accent-blue);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background-color: rgba(245, 158, 11, 0.18);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 .badge-drowsy {
@@ -468,8 +496,8 @@ body {
 }
 
 .form-control:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 2px var(--accent-blue-glow);
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 0 2px var(--accent-amber-glow);
 }
 
 /* Registration camera capture area */
@@ -588,11 +616,11 @@ body {
   position: relative;
   width: 100%;
   aspect-ratio: 4/3;
-  background-color: #030712;
+  background-color: #0d0c0a;
   border-radius: 16px;
   overflow: hidden;
-  border: 2px solid rgba(59, 130, 246, 0.4);
-  box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
 }
 
 .biometric-video {
@@ -607,8 +635,8 @@ body {
   left: 0;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, transparent 0%, #3b82f6 50%, #60a5fa 100%);
-  box-shadow: 0 0 15px #3b82f6, 0 0 30px #60a5fa;
+  background: linear-gradient(90deg, transparent 0%, #f59e0b 50%, #fbbf24 100%);
+  box-shadow: 0 0 15px #f59e0b, 0 0 30px #fbbf24;
   animation: laserScan 2.4s ease-in-out infinite;
   z-index: 10;
 }
@@ -626,7 +654,7 @@ body {
   transform: translate(-50%, -50%);
   width: 240px;
   height: 280px;
-  border: 1px dashed rgba(59, 130, 246, 0.5);
+  border: 1px dashed rgba(251, 191, 36, 0.6);
   border-radius: 30px;
   pointer-events: none;
   z-index: 5;
@@ -636,7 +664,7 @@ body {
   position: absolute;
   width: 24px;
   height: 24px;
-  border-color: #60a5fa;
+  border-color: #fbbf24;
   border-style: solid;
 }
 
@@ -650,14 +678,14 @@ body {
   bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(3, 7, 18, 0.85);
+  background: rgba(15, 14, 12, 0.88);
   backdrop-filter: blur(8px);
   padding: 0.5rem 1.2rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 700;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  color: #fff;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fffaf0;
   display: flex;
   align-items: center;
   gap: 0.5rem;

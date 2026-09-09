@@ -5,9 +5,9 @@ const Navbar = ({ currentUser, currentRole, activeTab, setActiveTab, onLogout, o
   const getRoleBadge = (role) => {
     switch (role) {
       case 'teacher':
-        return { label: 'Teacher Portal', color: 'var(--accent-purple)', icon: <Shield size={14} /> };
+        return { label: 'Teacher Portal', color: '#f97316', icon: <Shield size={14} /> };
       case 'student':
-        return { label: 'Student Portal', color: 'var(--accent-blue)', icon: <GraduationCap size={14} /> };
+        return { label: 'Student Portal', color: '#fbbf24', icon: <GraduationCap size={14} /> };
       case 'parent':
         return { label: 'Parent Portal', color: 'var(--accent-emerald)', icon: <Users size={14} /> };
       default:
@@ -21,7 +21,7 @@ const Navbar = ({ currentUser, currentRole, activeTab, setActiveTab, onLogout, o
     <header className="navbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
         <div className="logo" style={{ cursor: 'pointer' }} onClick={() => setActiveTab('dashboard')}>
-          <Camera size={26} color="#60a5fa" />
+          <Camera size={26} color="#fbbf24" />
           <span>EduCam</span>
         </div>
 
@@ -68,7 +68,7 @@ const Navbar = ({ currentUser, currentRole, activeTab, setActiveTab, onLogout, o
           <button 
             onClick={() => onQuickSwitch('teacher')}
             style={{
-              background: currentRole === 'teacher' ? 'var(--accent-purple)' : 'transparent',
+              background: currentRole === 'teacher' ? 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)' : 'transparent',
               color: currentRole === 'teacher' ? '#fff' : 'var(--text-secondary)',
               border: 'none',
               borderRadius: '18px',
@@ -83,8 +83,8 @@ const Navbar = ({ currentUser, currentRole, activeTab, setActiveTab, onLogout, o
           <button 
             onClick={() => onQuickSwitch('student')}
             style={{
-              background: currentRole === 'student' ? 'var(--accent-blue)' : 'transparent',
-              color: currentRole === 'student' ? '#fff' : 'var(--text-secondary)',
+              background: currentRole === 'student' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'transparent',
+              color: currentRole === 'student' ? '#170d01' : 'var(--text-secondary)',
               border: 'none',
               borderRadius: '18px',
               padding: '4px 10px',

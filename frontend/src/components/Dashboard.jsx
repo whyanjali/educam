@@ -367,10 +367,10 @@ const Dashboard = ({ openAIModal }) => {
             <button 
               className="btn"
               onClick={openAIModal}
-              style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)', borderColor: 'var(--accent-purple)' }}
+              style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%)', borderColor: 'rgba(245, 158, 11, 0.4)' }}
             >
-              <Sparkles size={16} color="#c084fc" />
-              <span>AI Pedagogy Insights</span>
+              <Sparkles size={16} color="#fbbf24" />
+              <span style={{ color: 'var(--text-primary)' }}>AI Pedagogy Insights</span>
             </button>
           </div>
         </div>
@@ -436,10 +436,10 @@ const Dashboard = ({ openAIModal }) => {
       <div className="glass-panel" style={{ marginTop: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
-            <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-purple)', fontWeight: 700 }}>
+            <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-amber)', fontWeight: 700 }}>
               Classroom Directory Management
             </span>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 800 }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
               Student Records (CRUD Studio)
             </h2>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -496,11 +496,11 @@ const Dashboard = ({ openAIModal }) => {
               ) : (
                 filteredDirectory.map((st) => (
                   <tr key={st.id}>
-                    <td style={{ fontWeight: 800, color: 'var(--accent-blue)' }}>#{st.roll_number}</td>
+                    <td style={{ fontWeight: 800, color: 'var(--accent-amber)' }}>#{st.roll_number}</td>
                     <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{st.name}</td>
                     <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{st.email || '-'}</td>
                     <td>
-                      <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600 }}>
+                      <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                         {st.grade || '10-A'}
                       </span>
                     </td>
@@ -512,7 +512,7 @@ const Dashboard = ({ openAIModal }) => {
                       </div>
                     </td>
                     <td>
-                      <strong>{st.avg_focus}%</strong>
+                      <strong style={{ color: 'var(--text-primary)' }}>{st.avg_focus}%</strong>
                     </td>
                     <td>
                       {st.has_face ? (
@@ -531,9 +531,9 @@ const Dashboard = ({ openAIModal }) => {
                           onClick={() => handleOpenEditModal(st)}
                           title="Edit Student (Update)"
                           style={{
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
-                            color: 'var(--accent-blue)',
+                            background: 'rgba(245, 158, 11, 0.1)',
+                            border: '1px solid rgba(245, 158, 11, 0.3)',
+                            color: 'var(--accent-amber)',
                             padding: '6px',
                             borderRadius: '6px',
                             cursor: 'pointer'

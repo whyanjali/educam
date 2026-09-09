@@ -142,10 +142,10 @@ const ParentDashboard = ({ currentUser, setActiveTab, openAIModal }) => {
         <div className="glass-panel">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem' }}>AI Pediatric Guidance & Counseling</h2>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', color: 'var(--text-primary)' }}>AI Pediatric Guidance & Counseling</h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Synthesized from EduCam classroom camera telemetry and exam trends</p>
             </div>
-            <span style={{ fontSize: '0.85rem', color: 'var(--accent-purple)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--accent-amber)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Sparkles size={16} /> Wellness Score: {counselingData?.wellness_score || 88}/100
             </span>
           </div>
@@ -172,8 +172,8 @@ const ParentDashboard = ({ currentUser, setActiveTab, openAIModal }) => {
                       fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      background: item.type === 'alert' ? 'rgba(244, 63, 94, 0.2)' : 'rgba(59, 130, 246, 0.15)',
-                      color: item.type === 'alert' ? 'var(--accent-rose)' : 'var(--accent-blue)'
+                      background: item.type === 'alert' ? 'rgba(244, 63, 94, 0.2)' : 'rgba(245, 158, 11, 0.15)',
+                      color: item.type === 'alert' ? 'var(--accent-rose)' : 'var(--accent-amber)'
                     }}>
                       {item.type}
                     </span>

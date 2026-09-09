@@ -269,19 +269,19 @@ const Login = ({ onLoginSuccess }) => {
               width: '48px',
               height: '48px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)'
+              boxShadow: '0 0 20px rgba(245, 158, 11, 0.45)'
             }}>
-              <Camera size={26} color="#fff" />
+              <Camera size={26} color="#170d01" />
             </div>
             <h1 style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '2.4rem',
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #60a5fa 0%, #c084fc 100%)',
+              background: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #f97316 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
             }}>
@@ -289,7 +289,7 @@ const Login = ({ onLoginSuccess }) => {
             </h1>
           </div>
 
-          <h2 style={{ fontSize: '1.65rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.65rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '1rem', color: 'var(--text-primary)' }}>
             Email Authentication & Classroom Vision Intelligence
           </h2>
 
@@ -303,11 +303,11 @@ const Login = ({ onLoginSuccess }) => {
               <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Secure Email Authentication with Role Verification</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="var(--accent-blue)" />
+              <CheckCircle size={20} color="var(--accent-amber)" />
               <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Teacher Cockpit: Full CRUD Student Management & Vision HUD</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <CheckCircle size={20} color="var(--accent-purple)" />
+              <CheckCircle size={20} color="var(--accent-gold)" />
               <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Real-Time Face ID Biometric Camera Sign-In</span>
             </div>
           </div>
@@ -324,8 +324,8 @@ const Login = ({ onLoginSuccess }) => {
                 className="btn"
                 onClick={() => handleQuickLogin('teacher')}
                 style={{
-                  background: 'rgba(139, 92, 246, 0.1)',
-                  borderColor: 'rgba(139, 92, 246, 0.3)',
+                  background: 'rgba(249, 115, 22, 0.1)',
+                  borderColor: 'rgba(249, 115, 22, 0.3)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
@@ -334,7 +334,7 @@ const Login = ({ onLoginSuccess }) => {
                   textAlign: 'left'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-purple)', fontWeight: 700, fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fb923c', fontWeight: 700, fontSize: '0.85rem' }}>
                   <Shield size={14} /> Teacher
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>teacher@educam.edu</div>
@@ -344,8 +344,8 @@ const Login = ({ onLoginSuccess }) => {
                 className="btn"
                 onClick={() => handleQuickLogin('student')}
                 style={{
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  borderColor: 'rgba(59, 130, 246, 0.3)',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  borderColor: 'rgba(245, 158, 11, 0.3)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
@@ -354,7 +354,7 @@ const Login = ({ onLoginSuccess }) => {
                   textAlign: 'left'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-blue)', fontWeight: 700, fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#fbbf24', fontWeight: 700, fontSize: '0.85rem' }}>
                   <GraduationCap size={14} /> Student
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>student@educam.edu</div>
@@ -395,8 +395,8 @@ const Login = ({ onLoginSuccess }) => {
                 padding: '9px 0',
                 border: 'none',
                 borderRadius: '8px',
-                background: authView === 'signin' ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent',
-                color: authView === 'signin' ? '#fff' : 'var(--text-secondary)',
+                background: authView === 'signin' ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' : 'transparent',
+                color: authView === 'signin' ? '#170d01' : 'var(--text-secondary)',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
@@ -417,8 +417,8 @@ const Login = ({ onLoginSuccess }) => {
                 padding: '9px 0',
                 border: 'none',
                 borderRadius: '8px',
-                background: authView === 'register' ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent',
-                color: authView === 'register' ? '#fff' : 'var(--text-secondary)',
+                background: authView === 'register' ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' : 'transparent',
+                color: authView === 'register' ? '#170d01' : 'var(--text-secondary)',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
@@ -439,8 +439,8 @@ const Login = ({ onLoginSuccess }) => {
                 padding: '9px 0',
                 border: 'none',
                 borderRadius: '8px',
-                background: authView === 'biometric' ? 'var(--bg-primary)' : 'transparent',
-                color: authView === 'biometric' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                background: authView === 'biometric' ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                color: authView === 'biometric' ? '#fbbf24' : 'var(--text-secondary)',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
@@ -552,7 +552,7 @@ const Login = ({ onLoginSuccess }) => {
                 <button
                   type="button"
                   onClick={() => setAuthView('register')}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-blue)', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-amber)', fontWeight: 700, cursor: 'pointer' }}
                 >
                   Register here
                 </button>
@@ -564,7 +564,7 @@ const Login = ({ onLoginSuccess }) => {
           {authView === 'register' && (
             <div>
               <div style={{ marginBottom: '1.25rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800 }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                   Create Account
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
@@ -582,7 +582,7 @@ const Login = ({ onLoginSuccess }) => {
                     padding: '6px 0',
                     border: 'none',
                     borderRadius: '6px',
-                    background: regRole === 'teacher' ? 'var(--accent-purple)' : 'transparent',
+                    background: regRole === 'teacher' ? 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)' : 'transparent',
                     color: regRole === 'teacher' ? '#fff' : 'var(--text-secondary)',
                     fontWeight: 600,
                     fontSize: '0.8rem',
@@ -604,8 +604,8 @@ const Login = ({ onLoginSuccess }) => {
                     padding: '6px 0',
                     border: 'none',
                     borderRadius: '6px',
-                    background: regRole === 'student' ? 'var(--accent-blue)' : 'transparent',
-                    color: regRole === 'student' ? '#fff' : 'var(--text-secondary)',
+                    background: regRole === 'student' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'transparent',
+                    color: regRole === 'student' ? '#170d01' : 'var(--text-secondary)',
                     fontWeight: 600,
                     fontSize: '0.8rem',
                     cursor: 'pointer',
@@ -792,7 +792,7 @@ const Login = ({ onLoginSuccess }) => {
                 <button
                   type="button"
                   onClick={() => setAuthView('signin')}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-blue)', fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-amber)', fontWeight: 700, cursor: 'pointer' }}
                 >
                   Sign In here
                 </button>
@@ -814,7 +814,7 @@ const Login = ({ onLoginSuccess }) => {
                 </div>
 
                 <div className="biometric-badge">
-                  <Scan size={14} color="#60a5fa" />
+                  <Scan size={14} color="#fbbf24" />
                   <span>{scanStatus}</span>
                 </div>
 
@@ -839,7 +839,7 @@ const Login = ({ onLoginSuccess }) => {
                 padding: '1rem'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-blue)', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-amber)', textTransform: 'uppercase' }}>
                     First Time? Enroll Your Face Now
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Takes 2 seconds</span>
