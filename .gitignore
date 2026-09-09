@@ -1,0 +1,23 @@
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/*/__pycache__/
+*.py[cod]
+*$py.class
+*.log
+backend/educam.db
+backend/faces/*
+!backend/faces/.gitkeep
+backend/face_model.xml
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Editor & System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
