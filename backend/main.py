@@ -34,20 +34,31 @@ camera_manager = CameraManager()
 
 # --- Request / Response Models ---
 class LoginRequest(BaseModel):
-    username: str
+    email: Optional[str] = None
+    username: Optional[str] = None
     password: str
 
 class RegisterRequest(BaseModel):
-    username: str
-    password: str
-    role: str
     name: str
-    email: Optional[str] = None
-    student_id: Optional[int] = None
+    email: str
+    password: str
+    role: str # 'teacher', 'student', 'parent'
+    roll_number: Optional[str] = None
+    grade: Optional[str] = "10-A"
+    child_roll_number: Optional[str] = None
+    department: Optional[str] = None
 
 class StudentCreate(BaseModel):
     name: str
     roll_number: str
+    email: Optional[str] = None
+    grade: Optional[str] = "10-A"
+
+class StudentUpdate(BaseModel):
+    name: str
+    roll_number: str
+    email: Optional[str] = None
+    grade: Optional[str] = "10-A"
 
 class FaceRegisterRequest(BaseModel):
     image_base64: str
@@ -109,9 +120,12 @@ def read_root():
 # --- Auth Endpoints ---
 @app.post("/api/auth/login")
 def login(req: LoginRequest):
-    user = authenticate_user(req.username, req.password)
+    identifier = req.email or req.username
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Please provide your email address or username.")
+    user = authenticate_user(identifier, req.password)
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+        raise HTTPException(status_code=401, detail="Invalid email or password. Please check your credentials.")
     return user
 
 @app.post("/api/auth/face-login")
@@ -228,37 +242,81 @@ async def quick_enroll_face(req: FaceRegisterRequest, student_id: int = 1, role:
 @app.post("/api/auth/register")
 def register(req: RegisterRequest):
     try:
-        user_id = register_user(req.username, req.password, req.role, req.name, req.email, req.student_id)
-        return {"id": user_id, "username": req.username, "role": req.role, "name": req.name}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Registration error: {str(e)}")
+        clean_email = req.email.strip().lower()
+        clean_name = req.name.strip()
+        student_id = None
 
-# --- Students & Attendance ---
+        if req.role == "student":
+            # Auto-generate or use user's roll number
+            roll = req.roll_number.strip() if req.roll_number else f"STU-{int(time.time()) % 10000}"
+            grade = req.grade or "10-A"
+            from database import add_student
+            student_id = add_student(clean_name, roll, clean_email, grade)
+        elif req.role == "parent":
+            # Link to child by child_roll_number or default to student 1
+            if req.child_roll_number:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT id FROM students WHERE roll_number = ? OR name LIKE ?", 
+                               (req.child_roll_number.strip(), f"%{req.child_roll_number.strip()}%"))
+                st = cursor.fetchone()
+                conn.close()
+                student_id = st["id"] if st else 1
+            else:
+                student_id = 1
+
+        username = clean_email.split("@")[0]
+        from database import register_user, authenticate_user
+        user_id = register_user(username, req.password, req.role, clean_name, clean_email, student_id)
+        
+        user = authenticate_user(clean_email, req.password)
+        return user or {
+            "id": user_id,
+            "username": username,
+            "role": req.role,
+            "name": clean_name,
+            "email": clean_email,
+            "student_id": student_id
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Registration failed: {str(e)}")
+
+# --- Students CRUD & Attendance ---
 @app.get("/api/students")
 def list_students():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, name, roll_number, created_at FROM students ORDER BY id ASC")
-    students = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    
-    faces_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "faces")
-    for s in students:
-        s["has_face"] = False
-        if os.path.exists(faces_dir):
-            for file in os.listdir(faces_dir):
-                if file.startswith(f"student_{s['id']}_") or file.startswith(f"student_{s['id']}."):
-                    s["has_face"] = True
-                    break
-    return students
+    from database import get_students_detailed
+    return get_students_detailed()
 
 @app.post("/api/students")
-def create_student(student: StudentCreate):
+def create_student_endpoint(student: StudentCreate):
     try:
-        student_id = add_student(student.name, student.roll_number)
-        return {"id": student_id, "name": student.name, "roll_number": student.roll_number}
+        from database import add_student
+        student_id = add_student(student.name, student.roll_number, student.email, student.grade or "10-A")
+        return {"id": student_id, "name": student.name, "roll_number": student.roll_number, "email": student.email, "grade": student.grade}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to create student: {str(e)}")
+
+@app.put("/api/students/{student_id}")
+def update_student_endpoint(student_id: int, student: StudentUpdate):
+    try:
+        from database import update_student
+        success = update_student(student_id, student.name, student.roll_number, student.email, student.grade or "10-A")
+        if success:
+            return {"status": "success", "message": f"Updated student #{student_id} successfully"}
+        raise HTTPException(status_code=404, detail="Student not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to update student: {str(e)}")
+
+@app.delete("/api/students/{student_id}")
+def delete_student_endpoint(student_id: int):
+    try:
+        from database import delete_student
+        delete_student(student_id)
+        # Retrain face recognizer so deleted face is flushed
+        camera_manager.recognizer.load_and_train()
+        return {"status": "success", "message": f"Deleted student #{student_id} and all related logs"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to delete student: {str(e)}")
 
 @app.post("/api/students/{student_id}/register-face")
 def register_face_live(student_id: int):

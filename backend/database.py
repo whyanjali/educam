@@ -20,9 +20,21 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         roll_number TEXT UNIQUE NOT NULL,
+        email TEXT,
+        grade TEXT DEFAULT '10-A',
         created_at TEXT NOT NULL
     )
     """)
+    
+    # Safe column migrations
+    try:
+        cursor.execute("ALTER TABLE students ADD COLUMN email TEXT")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE students ADD COLUMN grade TEXT DEFAULT '10-A'")
+    except Exception:
+        pass
     
     # 2. Users table (for Multi-Role Login)
     cursor.execute("""
@@ -223,17 +235,29 @@ def seed_initial_data():
             """, msg)
 
         conn.commit()
+
+    # Always ensure standard demo emails are set
+    cursor.execute("UPDATE users SET email = 'teacher@educam.edu' WHERE username = 'teacher'")
+    cursor.execute("UPDATE users SET email = 'student@educam.edu' WHERE username = 'student'")
+    cursor.execute("UPDATE users SET email = 'parent@educam.edu' WHERE username = 'parent'")
+    cursor.execute("UPDATE students SET email = 'student@educam.edu', grade = '10-A' WHERE roll_number = '101'")
+    cursor.execute("UPDATE students SET email = 'priya@educam.edu', grade = '10-A' WHERE roll_number = '102'")
+    cursor.execute("UPDATE students SET email = 'aarav@educam.edu', grade = '10-A' WHERE roll_number = '103'")
+    cursor.execute("UPDATE students SET email = 'sneha@educam.edu', grade = '10-A' WHERE roll_number = '104'")
+    conn.commit()
     conn.close()
 
-def authenticate_user(username, password):
+def authenticate_user(identifier, password):
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Accept either email or username (case-insensitive)
+    clean_id = identifier.strip() if identifier else ""
     cursor.execute("""
-        SELECT u.id, u.username, u.role, u.student_id, u.name, u.email, s.name as student_name, s.roll_number
+        SELECT u.id, u.username, u.role, u.student_id, u.name, u.email, s.name as student_name, s.roll_number, s.grade
         FROM users u
         LEFT JOIN students s ON u.student_id = s.id
-        WHERE u.username = ? AND u.password = ?
-    """, (username, password))
+        WHERE (LOWER(u.username) = LOWER(?) OR LOWER(u.email) = LOWER(?)) AND u.password = ?
+    """, (clean_id, clean_id, password))
     user = cursor.fetchone()
     conn.close()
     return dict(user) if user else None
@@ -251,14 +275,16 @@ def register_user(username, password, role, name, email, student_id=None):
     conn.close()
     return user_id
 
-def add_student(name: str, roll_number: str):
+def add_student(name: str, roll_number: str, email: str = None, grade: str = "10-A"):
     conn = get_db_connection()
     cursor = conn.cursor()
     created_at = datetime.now().isoformat()
+    if not email:
+        email = f"{roll_number.lower()}@student.educam.edu"
     try:
         cursor.execute(
-            "INSERT INTO students (name, roll_number, created_at) VALUES (?, ?, ?)",
-            (name, roll_number, created_at)
+            "INSERT INTO students (name, roll_number, email, grade, created_at) VALUES (?, ?, ?, ?, ?)",
+            (name, roll_number, email, grade, created_at)
         )
         student_id = cursor.lastrowid
         conn.commit()
@@ -271,6 +297,80 @@ def add_student(name: str, roll_number: str):
         raise
     finally:
         conn.close()
+
+def update_student(student_id: int, name: str, roll_number: str, email: str = None, grade: str = "10-A"):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE students 
+        SET name = ?, roll_number = ?, email = ?, grade = ?
+        WHERE id = ?
+    """, (name, roll_number, email, grade, student_id))
+    
+    # Also update name in linked users table if any
+    cursor.execute("UPDATE users SET name = ?, email = COALESCE(?, email) WHERE student_id = ?", (name, email, student_id))
+    conn.commit()
+    conn.close()
+    return True
+
+def delete_student(student_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Cascade deletes
+    cursor.execute("DELETE FROM face_signatures WHERE student_id = ?", (student_id,))
+    cursor.execute("DELETE FROM attendance WHERE student_id = ?", (student_id,))
+    cursor.execute("DELETE FROM activeness_logs WHERE student_id = ?", (student_id,))
+    cursor.execute("DELETE FROM academic_reports WHERE student_id = ?", (student_id,))
+    cursor.execute("DELETE FROM users WHERE student_id = ?", (student_id,))
+    cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
+    
+    conn.commit()
+    conn.close()
+    
+    # Clean up physical face image files on disk
+    faces_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "faces")
+    if os.path.exists(faces_dir):
+        for f in os.listdir(faces_dir):
+            if f.startswith(f"student_{student_id}_") or f.startswith(f"student_{student_id}."):
+                try:
+                    os.remove(os.path.join(faces_dir, f))
+                except Exception:
+                    pass
+    return True
+
+def get_students_detailed():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT count(DISTINCT date) as total_days FROM attendance")
+    total_days = max((cursor.fetchone()["total_days"] or 1), 1)
+    
+    cursor.execute("""
+        SELECT s.id, s.name, s.roll_number, s.email, s.grade, s.created_at,
+               (SELECT count(*) FROM attendance a WHERE a.student_id = s.id AND a.status = 'Present') as days_present,
+               (SELECT avg(l.attention_score) FROM activeness_logs l WHERE l.student_id = s.id) as avg_focus
+        FROM students s
+        ORDER BY s.roll_number ASC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    faces_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "faces")
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["attendance_rate"] = round((d["days_present"] / total_days) * 100, 1)
+        d["avg_focus"] = round(d["avg_focus"] or 82.0, 1)
+        
+        d["has_face"] = False
+        if os.path.exists(faces_dir):
+            for file in os.listdir(faces_dir):
+                if file.startswith(f"student_{d['id']}_") or file.startswith(f"student_{d['id']}."):
+                    d["has_face"] = True
+                    break
+        result.append(d)
+    return result
 
 def log_attendance(student_id: int):
     conn = get_db_connection()

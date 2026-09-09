@@ -1,46 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Shield, GraduationCap, Users, LogIn, ArrowRight, Sparkles, CheckCircle, Scan, Eye, EyeOff, UserCheck, RefreshCw, AlertCircle } from 'lucide-react';
+import { Camera, Shield, GraduationCap, Users, LogIn, UserPlus, ArrowRight, Sparkles, CheckCircle, Scan, Eye, EyeOff, UserCheck, AlertCircle, Mail, Lock, User, BookOpen } from 'lucide-react';
 
 const Login = ({ onLoginSuccess }) => {
-  // Modes: 'biometric' (Real-Time Face ID) or 'credentials' (Password / 1-Click Demo)
-  const [authMode, setAuthMode] = useState('biometric');
-  const [selectedRole, setSelectedRole] = useState('student');
-  const [username, setUsername] = useState('student');
-  const [password, setPassword] = useState('student123');
+  // Main view: 'signin' or 'register' or 'biometric'
+  const [authView, setAuthView] = useState('signin');
+  
+  // Sign In state
+  const [loginEmail, setLoginEmail] = useState('teacher@educam.edu');
+  const [loginPassword, setLoginPassword] = useState('teacher123');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
-  // Biometric scanning state
-  const [cameraActive, setCameraActive] = useState(false);
+  // Registration state
+  const [regRole, setRegRole] = useState('student');
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [regRollNumber, setRegRollNumber] = useState('');
+  const [regGrade, setRegGrade] = useState('Class 10-A');
+  const [regChildRoll, setRegChildRoll] = useState('101');
+  const [regDepartment, setRegDepartment] = useState('Mathematics & Science');
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError] = useState('');
+
+  // Biometric state
   const [scanStatus, setScanStatus] = useState('Align your face within the reticle to scan');
   const [scanSuccessUser, setScanSuccessUser] = useState(null);
-  const [enrollingRole, setEnrollingRole] = useState('student');
   const [enrollNotice, setEnrollNotice] = useState('');
-
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const scanIntervalRef = useRef(null);
   const streamRef = useRef(null);
 
   const demoAccounts = {
-    teacher: { username: 'teacher', password: 'teacher123', name: 'Prof. Vikram Sharma', desc: 'Classroom Vision Cockpit, attendance sheets & roster' },
-    student: { username: 'student', password: 'student123', name: 'Rahul Sharma (Roll: 101)', desc: 'Personal attendance streak, focus graph & AI study tutor' },
-    parent: { username: 'parent', password: 'parent123', name: 'Mr. Rajesh Sharma', desc: 'Child arrival verification, fatigue alerts & teacher chat' }
+    teacher: { email: 'teacher@educam.edu', password: 'teacher123', name: 'Prof. Vikram Sharma', desc: 'Classroom Vision Cockpit, attendance sheets & roster' },
+    student: { email: 'student@educam.edu', password: 'student123', name: 'Rahul Sharma (Roll: 101)', desc: 'Personal attendance streak, focus graph & AI study tutor' },
+    parent: { email: 'parent@educam.edu', password: 'parent123', name: 'Mr. Rajesh Sharma', desc: 'Child arrival verification, fatigue alerts & teacher chat' }
   };
 
-  // Start webcam when entering biometric mode
   useEffect(() => {
-    if (authMode === 'biometric') {
+    if (authView === 'biometric') {
       startWebcam();
     } else {
       stopWebcam();
     }
-
-    return () => {
-      stopWebcam();
-    };
-  }, [authMode]);
+    return () => stopWebcam();
+  }, [authView]);
 
   const startWebcam = async () => {
     try {
@@ -51,12 +58,10 @@ const Login = ({ onLoginSuccess }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
-        setCameraActive(true);
         startAutoScanning();
       }
     } catch (err) {
-      console.warn('Camera access denied or unavailable:', err);
-      setScanStatus('Camera unavailable. You can switch to Credentials login.');
+      setScanStatus('Camera unavailable. Please switch to Email login.');
     }
   };
 
@@ -66,16 +71,13 @@ const Login = ({ onLoginSuccess }) => {
       scanIntervalRef.current = null;
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     }
-    setCameraActive(false);
   };
 
-  // Auto scan frame every 1.5 seconds
   const startAutoScanning = () => {
     if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
-    
     scanIntervalRef.current = setInterval(() => {
       captureAndVerifyFace();
     }, 1500);
@@ -95,7 +97,7 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   const captureAndVerifyFace = async () => {
-    if (scanSuccessUser) return; // already authenticated
+    if (scanSuccessUser) return;
     const base64 = captureFrameBase64();
     if (!base64) return;
 
@@ -123,8 +125,8 @@ const Login = ({ onLoginSuccess }) => {
           setScanStatus('Face detected. Unenrolled profile - click "Enroll My Face" below');
         }
       }
-    } catch (err) {
-      // Background retry silently
+    } catch {
+      // Retry
     }
   };
 
@@ -152,47 +154,92 @@ const Login = ({ onLoginSuccess }) => {
       } else {
         setEnrollNotice(data.detail || 'Enrollment failed.');
       }
-    } catch (err) {
+    } catch {
       setEnrollNotice('Failed to enroll face.');
     }
   };
 
-  const handleRoleTabClick = (role) => {
-    setSelectedRole(role);
-    setUsername(demoAccounts[role].username);
-    setPassword(demoAccounts[role].password);
-    setError('');
-  };
-
   const handleQuickLogin = (role) => {
-    setSelectedRole(role);
+    setAuthView('signin');
     const acc = demoAccounts[role];
-    executeLogin(acc.username, acc.password);
+    setLoginEmail(acc.email);
+    setLoginPassword(acc.password);
+    executeLogin(acc.email, acc.password);
   };
 
-  const handleSubmit = (e) => {
+  const handleLoginSubmit = (e) => {
     e.preventDefault();
-    executeLogin(username, password);
+    executeLogin(loginEmail, loginPassword);
   };
 
-  const executeLogin = async (user, pass) => {
-    setLoading(true);
-    setError('');
+  const executeLogin = async (email, pass) => {
+    setLoginLoading(true);
+    setLoginError('');
     try {
       const res = await fetch('http://localhost:8000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: user, password: pass })
+        body: JSON.stringify({ email: email.trim(), password: pass })
       });
+
       if (!res.ok) {
-        throw new Error('Invalid username or password');
+        const errData = await res.json();
+        throw new Error(errData.detail || 'Invalid email or password');
       }
-      const data = await res.json();
-      onLoginSuccess(data);
+
+      const user = await res.json();
+      onLoginSuccess(user);
     } catch (err) {
-      setError(err.message || 'Login failed. Please check backend server.');
+      setLoginError(err.message || 'Login failed. Please check credentials.');
     } finally {
-      setLoading(false);
+      setLoginLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegError('');
+
+    if (regPassword !== regConfirmPassword) {
+      setRegError('Passwords do not match. Please verify.');
+      return;
+    }
+
+    if (regPassword.length < 6) {
+      setRegError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setRegLoading(true);
+    try {
+      const payload = {
+        name: regName.trim(),
+        email: regEmail.trim().toLowerCase(),
+        password: regPassword,
+        role: regRole,
+        roll_number: regRole === 'student' ? regRollNumber.trim() : null,
+        grade: regRole === 'student' ? regGrade : null,
+        child_roll_number: regRole === 'parent' ? regChildRoll.trim() : null,
+        department: regRole === 'teacher' ? regDepartment.trim() : null
+      };
+
+      const res = await fetch('http://localhost:8000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || 'Registration failed.');
+      }
+
+      const newUser = await res.json();
+      onLoginSuccess(newUser);
+    } catch (err) {
+      setRegError(err.message || 'Registration failed. Please check form details.');
+    } finally {
+      setRegLoading(false);
     }
   };
 
@@ -208,14 +255,14 @@ const Login = ({ onLoginSuccess }) => {
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       <div style={{
-        maxWidth: '1100px',
+        maxWidth: '1120px',
         width: '100%',
         display: 'grid',
-        gridTemplateColumns: '1.1fr 1fr',
+        gridTemplateColumns: '1.05fr 1.1fr',
         gap: '2.5rem',
         alignItems: 'center'
       }}>
-        {/* Left Side: Product Showcase & Info */}
+        {/* Left Side: Product Showcase & Quick Profile Switcher */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
             <div style={{
@@ -242,26 +289,26 @@ const Login = ({ onLoginSuccess }) => {
             </h1>
           </div>
 
-          <h2 style={{ fontSize: '1.7rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '1rem' }}>
-            Real-Time Face ID Biometric Authentication & Classroom Vision
+          <h2 style={{ fontSize: '1.65rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '1rem' }}>
+            Email Authentication & Classroom Vision Intelligence
           </h2>
 
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-            Experience touchless sign-in powered by real-time computer vision biometrics. Step in front of the lens for instant identification, automatic attendance logging, and engagement telemetry.
+            Sign in with your verified email to access dedicated dashboards for Teachers, Students, and Parents. Features camera attendance, real-time focus tracking, student record management, and AI counseling.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <CheckCircle size={20} color="var(--accent-emerald)" />
-              <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Real-Time Face ID: Camera scan verifies your profile in milliseconds</span>
+              <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Secure Email Authentication with Role Verification</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <CheckCircle size={20} color="var(--accent-blue)" />
-              <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Automated Classroom Attendance + Real-Time Fatigue Tracking</span>
+              <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Teacher Cockpit: Full CRUD Student Management & Vision HUD</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <CheckCircle size={20} color="var(--accent-purple)" />
-              <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Dedicated Portals for Teacher, Student & Parent</span>
+              <span style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>Real-Time Face ID Biometric Camera Sign-In</span>
             </div>
           </div>
 
@@ -269,7 +316,7 @@ const Login = ({ onLoginSuccess }) => {
           <div style={{ marginTop: '2.5rem' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Sparkles size={14} color="#f59e0b" />
-              <span>Instant 1-Click Demo Profiles</span>
+              <span>Instant 1-Click Demo Logins</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
@@ -290,7 +337,7 @@ const Login = ({ onLoginSuccess }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-purple)', fontWeight: 700, fontSize: '0.85rem' }}>
                   <Shield size={14} /> Teacher
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Prof. Vikram</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>teacher@educam.edu</div>
               </button>
 
               <button 
@@ -310,7 +357,7 @@ const Login = ({ onLoginSuccess }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-blue)', fontWeight: 700, fontSize: '0.85rem' }}>
                   <GraduationCap size={14} /> Student
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Rahul (Roll 101)</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>student@educam.edu</div>
               </button>
 
               <button 
@@ -330,73 +377,435 @@ const Login = ({ onLoginSuccess }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-emerald)', fontWeight: 700, fontSize: '0.85rem' }}>
                   <Users size={14} /> Parent
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Mr. Rajesh</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>parent@educam.edu</div>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Authentication Panel */}
+        {/* Right Side: Auth Card (Sign In / Register / Face ID) */}
         <div className="glass-panel" style={{ padding: '2rem', borderRadius: '20px' }}>
-          {/* Auth Mode Toggle */}
+          {/* Main Mode Tabs */}
           <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: '12px', padding: '4px', marginBottom: '1.5rem', border: '1px solid var(--glass-border)' }}>
             <button
               type="button"
-              onClick={() => setAuthMode('biometric')}
+              onClick={() => { setAuthView('signin'); setLoginError(''); }}
               style={{
                 flex: 1,
-                padding: '10px 0',
+                padding: '9px 0',
                 border: 'none',
                 borderRadius: '8px',
-                background: authMode === 'biometric' ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent',
-                color: authMode === 'biometric' ? '#fff' : 'var(--text-secondary)',
+                background: authView === 'signin' ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent',
+                color: authView === 'signin' ? '#fff' : 'var(--text-secondary)',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s'
+                gap: '0.4rem'
               }}
             >
-              <Scan size={16} /> Real-Time Face ID
+              <LogIn size={15} /> Sign In
             </button>
 
             <button
               type="button"
-              onClick={() => setAuthMode('credentials')}
+              onClick={() => { setAuthView('register'); setRegError(''); }}
               style={{
                 flex: 1,
-                padding: '10px 0',
+                padding: '9px 0',
                 border: 'none',
                 borderRadius: '8px',
-                background: authMode === 'credentials' ? 'var(--bg-primary)' : 'transparent',
-                color: authMode === 'credentials' ? '#fff' : 'var(--text-secondary)',
+                background: authView === 'register' ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)' : 'transparent',
+                color: authView === 'register' ? '#fff' : 'var(--text-secondary)',
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s'
+                gap: '0.4rem'
               }}
             >
-              <LogIn size={16} /> Credentials
+              <UserPlus size={15} /> Register
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAuthView('biometric')}
+              style={{
+                flex: 1,
+                padding: '9px 0',
+                border: 'none',
+                borderRadius: '8px',
+                background: authView === 'biometric' ? 'var(--bg-primary)' : 'transparent',
+                color: authView === 'biometric' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem'
+              }}
+            >
+              <Scan size={15} /> Face ID
             </button>
           </div>
 
-          {/* MODE 1: Real-Time Face ID Biometric Camera Viewport */}
-          {authMode === 'biometric' && (
+          {/* VIEW 1: EMAIL SIGN IN */}
+          {authView === 'signin' && (
+            <div>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800 }}>
+                  Email Sign In
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                  Enter your registered institutional or personal email address
+                </p>
+              </div>
+
+              {loginError && (
+                <div style={{
+                  background: 'rgba(244, 63, 94, 0.15)',
+                  border: '1px solid var(--accent-rose)',
+                  color: '#fca5a5',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <AlertCircle size={16} />
+                  <span>{loginError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleLoginSubmit}>
+                <div className="form-group">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Mail size={14} color="var(--accent-blue)" /> Email Address
+                  </label>
+                  <input 
+                    type="email" 
+                    className="form-control" 
+                    placeholder="e.g. teacher@educam.edu"
+                    value={loginEmail} 
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required 
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Lock size={14} color="var(--accent-blue)" /> Password
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type={showPassword ? 'text' : 'password'} 
+                      className="form-control" 
+                      placeholder="Enter your account password"
+                      value={loginPassword} 
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      required 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={loginLoading}
+                  style={{ width: '100%', justifyContent: 'center', marginTop: '1.25rem', padding: '0.85rem' }}
+                >
+                  {loginLoading ? (
+                    'Authenticating...'
+                  ) : (
+                    <>
+                      <LogIn size={18} /> Sign In to Portal
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setAuthView('register')}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-blue)', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Register here
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 2: ROLE-BASED REGISTRATION */}
+          {authView === 'register' && (
+            <div>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800 }}>
+                  Create Account
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                  Register as Teacher, Student, or Parent to access your dedicated dashboard
+                </p>
+              </div>
+
+              {/* Role Selection Tabs */}
+              <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: '10px', padding: '4px', marginBottom: '1.25rem', border: '1px solid var(--glass-border)' }}>
+                <button
+                  type="button"
+                  onClick={() => setRegRole('teacher')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 0',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: regRole === 'teacher' ? 'var(--accent-purple)' : 'transparent',
+                    color: regRole === 'teacher' ? '#fff' : 'var(--text-secondary)',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <Shield size={14} /> Teacher
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRegRole('student')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 0',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: regRole === 'student' ? 'var(--accent-blue)' : 'transparent',
+                    color: regRole === 'student' ? '#fff' : 'var(--text-secondary)',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <GraduationCap size={14} /> Student
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRegRole('parent')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 0',
+                    border: 'none',
+                    borderRadius: '6px',
+                    background: regRole === 'parent' ? 'var(--accent-emerald)' : 'transparent',
+                    color: regRole === 'parent' ? '#fff' : 'var(--text-secondary)',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <Users size={14} /> Parent
+                </button>
+              </div>
+
+              {regError && (
+                <div style={{
+                  background: 'rgba(244, 63, 94, 0.15)',
+                  border: '1px solid var(--accent-rose)',
+                  color: '#fca5a5',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <AlertCircle size={16} />
+                  <span>{regError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleRegisterSubmit}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div className="form-group">
+                    <label>Full Name</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder={regRole === 'teacher' ? "Prof. Name" : regRole === 'parent' ? "Mr./Mrs. Parent" : "Student Name"}
+                      value={regName} 
+                      onChange={(e) => setRegName(e.target.value)}
+                      required 
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Email Address</label>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      placeholder="name@educam.edu"
+                      value={regEmail} 
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      required 
+                    />
+                  </div>
+                </div>
+
+                {/* Role-Specific Fields */}
+                {regRole === 'student' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div className="form-group">
+                      <label>Roll Number / Student ID</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. 105"
+                        value={regRollNumber} 
+                        onChange={(e) => setRegRollNumber(e.target.value)}
+                        required 
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Grade / Section</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        placeholder="e.g. Class 10-A"
+                        value={regGrade} 
+                        onChange={(e) => setRegGrade(e.target.value)}
+                        required 
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {regRole === 'parent' && (
+                  <div className="form-group">
+                    <label>Child's Roll Number or Name</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder="e.g. 101 or Rahul Sharma"
+                      value={regChildRoll} 
+                      onChange={(e) => setRegChildRoll(e.target.value)}
+                      required 
+                    />
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                      Automatically links to your child's attendance & focus records
+                    </span>
+                  </div>
+                )}
+
+                {regRole === 'teacher' && (
+                  <div className="form-group">
+                    <label>Department / Subject</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder="e.g. Mathematics & Computer Science"
+                      value={regDepartment} 
+                      onChange={(e) => setRegDepartment(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div className="form-group">
+                    <label>Password</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      placeholder="Min 6 chars"
+                      value={regPassword} 
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required 
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Confirm Password</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      placeholder="Repeat password"
+                      value={regConfirmPassword} 
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      required 
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={regLoading}
+                  style={{ width: '100%', justifyContent: 'center', marginTop: '1.25rem', padding: '0.85rem' }}
+                >
+                  {regLoading ? (
+                    'Registering Profile...'
+                  ) : (
+                    <>
+                      <UserPlus size={18} /> Register as {regRole.charAt(0).toUpperCase() + regRole.slice(1)}
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div style={{ marginTop: '1.25rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Already registered?{' '}
+                <button
+                  type="button"
+                  onClick={() => setAuthView('signin')}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--accent-blue)', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Sign In here
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 3: BIOMETRIC FACE ID */}
+          {authView === 'biometric' && (
             <div>
               <div className="biometric-scanner-viewport">
                 <video ref={videoRef} className="biometric-video" playsInline muted></video>
-
-                {/* Laser scan line animation */}
                 <div className="biometric-laser-line"></div>
-
-                {/* Reticle bounding box with corner markers */}
                 <div className="biometric-reticle">
                   <div className="reticle-corner tl"></div>
                   <div className="reticle-corner tr"></div>
@@ -404,13 +813,11 @@ const Login = ({ onLoginSuccess }) => {
                   <div className="reticle-corner br"></div>
                 </div>
 
-                {/* Real-time Status Badge */}
                 <div className="biometric-badge">
                   <Scan size={14} color="#60a5fa" />
                   <span>{scanStatus}</span>
                 </div>
 
-                {/* Verified Animation Overlay */}
                 {scanSuccessUser && (
                   <div className="biometric-verified-overlay">
                     <UserCheck size={56} color="#fff" />
@@ -424,7 +831,6 @@ const Login = ({ onLoginSuccess }) => {
                 )}
               </div>
 
-              {/* Instant Biometric Enrollment Widget */}
               <div style={{
                 marginTop: '1.25rem',
                 background: 'rgba(255, 255, 255, 0.02)',
@@ -476,151 +882,6 @@ const Login = ({ onLoginSuccess }) => {
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* MODE 2: Standard Credentials Login */}
-          {authMode === 'credentials' && (
-            <div>
-              {/* Role selector tabs */}
-              <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: '10px', padding: '4px', marginBottom: '1.25rem', border: '1px solid var(--glass-border)' }}>
-                <button
-                  type="button"
-                  onClick={() => handleRoleTabClick('teacher')}
-                  style={{
-                    flex: 1,
-                    padding: '6px 0',
-                    border: 'none',
-                    borderRadius: '6px',
-                    background: selectedRole === 'teacher' ? 'var(--accent-purple)' : 'transparent',
-                    color: selectedRole === 'teacher' ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem'
-                  }}
-                >
-                  <Shield size={14} /> Teacher
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleRoleTabClick('student')}
-                  style={{
-                    flex: 1,
-                    padding: '6px 0',
-                    border: 'none',
-                    borderRadius: '6px',
-                    background: selectedRole === 'student' ? 'var(--accent-blue)' : 'transparent',
-                    color: selectedRole === 'student' ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem'
-                  }}
-                >
-                  <GraduationCap size={14} /> Student
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleRoleTabClick('parent')}
-                  style={{
-                    flex: 1,
-                    padding: '6px 0',
-                    border: 'none',
-                    borderRadius: '6px',
-                    background: selectedRole === 'parent' ? 'var(--accent-emerald)' : 'transparent',
-                    color: selectedRole === 'parent' ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem'
-                  }}
-                >
-                  <Users size={14} /> Parent
-                </button>
-              </div>
-
-              {error && (
-                <div style={{
-                  background: 'rgba(244, 63, 94, 0.15)',
-                  border: '1px solid var(--accent-rose)',
-                  color: '#fca5a5',
-                  padding: '0.75rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  marginBottom: '1rem'
-                }}>
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label>Username</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={username} 
-                    onChange={(e) => setUsername(e.target.value)}
-                    required 
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Password</label>
-                  <div style={{ position: 'relative' }}>
-                    <input 
-                      type={showPassword ? 'text' : 'password'} 
-                      className="form-control" 
-                      value={password} 
-                      onChange={(e) => setPassword(e.target.value)}
-                      required 
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      style={{
-                        position: 'absolute',
-                        right: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button 
-                  type="submit" 
-                  className="btn btn-primary"
-                  disabled={loading}
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '1.25rem', padding: '0.85rem' }}
-                >
-                  {loading ? (
-                    'Authenticating...'
-                  ) : (
-                    <>
-                      <LogIn size={18} /> Sign In to {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Portal
-                    </>
-                  )}
-                </button>
-              </form>
             </div>
           )}
         </div>
