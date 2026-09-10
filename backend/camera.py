@@ -67,26 +67,43 @@ class CameraManager:
         print("Camera capture thread stopped.")
 
     def _capture_loop(self):
+        consecutive_failures = 0
         while self.running:
-            ret, frame = self.cap.read()
-            if not ret:
-                time.sleep(0.03)
-                continue
+            try:
+                if self.cap is None or not self.cap.isOpened():
+                    time.sleep(0.5)
+                    continue
+
+                ret, frame = self.cap.read()
+                if not ret or frame is None:
+                    consecutive_failures += 1
+                    time.sleep(0.05)
+                    if consecutive_failures > 60:
+                        try:
+                            self.cap.release()
+                            self.cap = cv2.VideoCapture(0)
+                        except Exception:
+                            pass
+                        consecutive_failures = 0
+                    continue
+
+                consecutive_failures = 0
+                # Flip horizontally for natural mirror effect
+                frame = cv2.flip(frame, 1)
                 
-            # Flip horizontally for natural mirror effect
-            frame = cv2.flip(frame, 1)
-            
-            # Process the frame
-            annotated, metrics = self.process_frame(frame)
-            
-            # Update cache
-            with self._lock:
-                self.latest_frame = frame
-                self.annotated_frame = annotated
-                self.latest_metrics = metrics
+                # Process the frame
+                annotated, metrics = self.process_frame(frame)
                 
-            # Sleep briefly to control frame rate (approx 15-20 FPS)
-            time.sleep(0.05)
+                # Update cache
+                with self._lock:
+                    self.latest_frame = frame
+                    self.annotated_frame = annotated
+                    self.latest_metrics = metrics
+                    
+                # Sleep briefly to control frame rate (approx 15-20 FPS)
+                time.sleep(0.05)
+            except Exception as err:
+                time.sleep(0.1)
 
     def process_frame(self, frame):
         """
